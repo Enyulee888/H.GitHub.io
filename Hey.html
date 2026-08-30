@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自訂按鈕導航列</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f4f4f9;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        /* 按鈕列表容器 */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            display: block;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            background-color: #bd2130;
+        }
+
+        /* 設定區塊樣式 */
+        .settings-panel {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .add-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>我的導航按鈕</h2>
+    <div id="buttonContainer" class="button-container">
+        </div>
+
+    <div class="settings-panel">
+        <h2>設定：新增按鈕</h2>
+        <div class="input-group">
+            <input type="text" id="btnName" placeholder="按鈕名稱（例如：Google）">
+            <input type="url" id="btnUrl" placeholder="目標網址（例如：https://www.google.com）">
+        </div>
+        <button class="add-btn" onclick="addButton()">新增並儲存</button>
+    </div>
+
+    <script>
+        // 頁面載入時自動讀取 localStorage 資料
+        document.addEventListener('DOMContentLoaded', loadButtons);
+
+        function getStoredButtons() {
+            const buttons = localStorage.getItem('myNavButtons');
+            return buttons ? JSON.parse(buttons) : [];
+        }
+
+        function loadButtons() {
+            const buttons = getStoredButtons();
+            const container = document.getElementById('buttonContainer');
+            container.innerHTML = '';
+
+            buttons.forEach((button, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'btn-wrapper';
+
+                const a = document.createElement('a');
+                a.href = button.url;
+                a.target = '_blank';
+                a.className = 'btn';
+                a.textContent = button.name;
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.textContent = '刪除';
+                delBtn.onclick = () => deleteButton(index);
+
+                wrapper.appendChild(a);
+                wrapper.appendChild(delBtn);
+                container.appendChild(wrapper);
+            });
+        }
+
+        function addButton() {
+            const nameInput = document.getElementById('btnName');
+            const urlInput = document.getElementById('btnUrl');
+
+            const name = nameInput.value.trim();
+            let url = urlInput.value.trim();
+
+            if (!name || !url) {
+                alert('請填寫按鈕名稱與網址！');
+                return;
+            }
+
+            // 自動補上 https:// 避免連結失效
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            const buttons = getStoredButtons();
+            buttons.push({ name, url });
+
+            // 儲存至 localStorage (需轉為 JSON 字串)
+            localStorage.setItem('myNavButtons', JSON.stringify(buttons));
+
+            // 清空輸入框並重新渲染列表
+            nameInput.value = '';
+            urlInput.value = '';
+            loadButtons();
+        }
+
+        function deleteButton(index) {
+            const buttons = getStoredButtons();
+            buttons.splice(index, 1);
+            localStorage.setItem('myNavButtons', JSON.stringify(buttons));
+            loadButtons();
+        }
+    </script>
+
+</body>
+</html>
